@@ -1,0 +1,226 @@
+<?php
+
+include 'connect.php';
+$userid = $_REQUEST['userid'];
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" href="Images/system.png" type="image/png" sizes="16x16">
+  <title>Make Request</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <style>
+    /* Set height of the grid so .sidenav can be 100% (adjust if needed) */
+    .row.content {height: 600px}
+    
+    /* Set gray background color and 100% height */
+    .sidenav {
+      background-color: #f1f1f1;
+      height: 100%;
+    }
+    
+    /* Set black background color, white text and some padding */
+    footer {
+      background-color: #555;
+      color: white;
+      padding: 15px;
+    }
+    
+    /* On small screens, set height to 'auto' for sidenav and grid */
+    @media screen and (max-width: 767px) {
+      .sidenav {
+        height: auto;
+        padding: 15px;
+      }
+      .row.content {height: auto;} 
+
+    }
+
+      .in{
+      background-color:#4CAF50;
+          color:white;
+          font-family:'Arial';
+          padding-right: : 5px;
+          width: 100px;
+          height: 50px;
+          border: none;
+}
+
+.out{
+ background-color: #f44336;
+  color:white; 
+  font-family:'Arial';
+  padding-right: : 5px;
+  width: 100px;
+  height: 50px;
+  border: none;
+}
+    .form-style{
+        position: absolute;
+        resize: none;
+        overflow: auto;
+        border-style: solid;
+        border-width: thin; 
+        width: 70%;
+        margin-left: 350px;
+        background-color: lightgrey;
+
+    }
+
+    .space{
+  width: 500px;
+}
+    
+  </style>
+</head>
+<body>
+
+<h2>Welcome User</h2>
+<hr>
+<div class="container-fluid">
+  <div class="row content">
+    <div class="col-sm-3 sidenav">
+      <u>
+        <h4>USERS DASHBOARD</h4>  
+      </u>
+      
+      <ul class="nav nav-pills nav-stacked">
+
+        <li class="active"><a href="users.php?userid=<?php echo $userid; ?>">Make a request</a></li>
+        <li><a href="ureqstatus.php?userid=<?php echo $userid; ?>">View Request Status</a></li>
+        <li><a href="logout.php?userid=<?php echo $userid; ?>">Logout</a></li>
+        
+      </ul><br>
+      
+    </div>
+
+  
+<div class="position">
+  
+
+<form method="POST" class="form-style">
+  <center>
+      <b>
+        <u>
+          <h3>REQUEST FORM</h3> 
+        </u>          
+      </b>
+ <b>
+  Date requested:<br> 
+ </b>
+  
+  <input name="date" type="Date" value="" class="space">
+  <br>
+
+  <b>
+   Item:<br>  
+  </b>
+  
+                      
+                                <select class="space" name="items">
+                                    <?php
+                                                                        echo "<option syle='font-weight:bold;' value=''>".'--SELECT ITEM--'."</option>";
+                                                                         $sql = "SELECT * FROM items";
+                                                                         $result = mysqli_query($conn,$sql);                 
+                                                                         while($rsmod=mysqli_fetch_array($result)){
+                                                                          $item_code= $rsmod['item_code'];
+                                                                          $item= $rsmod['Item'];
+                                                                          $description= $rsmod['Description'];
+                                                                          $new=$description.' -'.$item;
+
+                                                                          echo "<option value='$item'>".$new."</option>";              
+                                                                         }
+                                                                        ?>
+                                </select> 
+                      
+  <br>
+ 
+  <b>
+   Quantity:<br>  
+  </b>
+  
+  <input class="space" type="text" name="quantity" value="">
+  <br><br>
+  <b>
+    Department requesting:<br>  
+  </b>
+  
+                  
+                                <select class="space" name="department">
+                                    <option >Production</option>
+                                    <option >Research and Development</option>
+                                    <option >Purchasing</option>
+                                    <option >Marketing</option>
+                                    <option >Human Resource Management</option>
+                                    <option >Accounting and Finance.</option> 
+                                </select>                            
+                      
+  <br><br>
+  <input class="in" type="submit" name="confirm" value="REQUEST">
+  <input class="out" type="reset" name="cancel" value="CANCEL">
+
+</center>
+
+<br><br>
+
+
+
+</div>
+
+
+<?php
+    if (isset($_POST['confirm'])) {  
+ 
+  $date = $_POST['date']; 
+  $items = $_POST['items']; 
+  $quantity = $_POST['quantity']; 
+  $department = $_POST['department'];
+  
+  $sql = "SELECT * FROM items WHERE item_code='$items' ";
+       $result = mysqli_query($conn,$sql);                 
+       while($rsmod=mysqli_fetch_array($result)){
+      $qtyindb= $rsmod['Quantity'];                       
+      }
+
+if ($qtyindb > $quantity) {
+  # code...
+  echo "<script language=\"JavaScript\" type=\"text/JavaScript\">";
+      echo "alert('ITEM QUANTITY EXCEEDED!!');";
+      echo "</script>";
+}else{
+
+  echo "<script language=\"JavaScript\" type=\"text/JavaScript\">";
+      echo "alert('ITEM QUANTITY WITHIN STOCK!!');";
+      echo "</script>";
+}
+
+ if (isset($_POST['confirm'])) {  
+ 
+  
+  $date = $_POST['date']; 
+  $items = $_POST['items']; 
+  $quantity = $_POST['quantity']; 
+  $department = $_POST['department'];
+
+  $sql = "INSERT INTO requisition (req_id, rdate, item, quantity,  dep_requesting) values (DEFAULT,'$date','$items','$quantity','$department')";
+  $smsql = mysqli_query($conn,$sql);
+  echo "Operation Success!!!";
+  if ($smsql == false) {
+    # code...
+    echo "ERROR->".mysqli_error();
+
+  
+  }
+
+}
+  
+
+} 
+?>
+</form>  
+</body>
+</html>
